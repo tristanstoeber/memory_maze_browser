@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Memory Maze — self test</title>
+<style>body{background:#0c1016;color:#e8edf4;font:14px ui-monospace,monospace;padding:20px}
+.pass{color:#7ddc8f}.fail{color:#ff8b8b}</style></head>
+<body><h1>Memory Maze self test</h1><pre id="out">running…</pre>
+<script type="module">
+// Headless check of the ported game logic: geometry, collision, scoring, timer.
+// Open test.html in a browser, or run it headless:
+//   google-chrome --headless=new --virtual-time-budget=30000 --dump-dom URL/test.html
+import { loadLevel, loadLevelIndex } from './src/level.js';
+import { Game } from './src/game.js';
+import { PHYS } from './src/config.js';
+
+const out = document.getElementById('out');
+const log = [];
+let failures = 0;
+function check(name, ok, detail = '') {
+  if (!ok) failures++;
+  log.push(`<span class="${ok ? 'pass' : 'fail'}">${ok ? 'PASS' : 'FAIL'}</span> ${name}${detail ? ' — ' + detail : ''}`);
+  out.innerHTML = log.join('\n');
+}
+
+const WALLS = new Set('*0123456789');
+const cellOf = (level, x, y) => {
+  const g = level.data.grid, s = level.data.xy_scale;
+  return [Math.round(-y / s + g.y_offset), Math.round(x / s + g.x_offset)];
+};
+const worldOf = (level, r, c) => {
+  const g = level.data.grid, s = level.data.xy_scale;
+  return [(c - g.x_offset) * s, -(r - g.y_offset) * s];
+};
+
+function bfs(level, from, to) {
+  const grid = level.data.grid.entity;
+  const rows = grid.length, cols = grid[0].length;
+  const key = (r, c) => r * cols + c;
+  const prev = new Map();
+  const q = [from];
+  prev.set(key(...from), null);
+  while (q.length) {
+    const [r, c] = q.shift();
+    if (r === to[0] && c === to[1]) break;
+    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nr = r + dr, nc = c + dc;
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+      if (WALLS.has(grid[nr][nc])) continue;
+      if (prev.has(key(nr, nc))) continue;
+      prev.set(key(nr, nc), [r, c]);
+      q.push([nr, nc]);
+    }
+  }
+  if (!prev.has(key(...to))) return null;
+  const path = [];
+  let cur = to;
+  while (cur) { path.push(cur); cur = prev.get(key(...cur)); }
+  return path.reverse();
+}
+
+// Drive the player along a cell path with the same command interface the
+// keyboard produces, so this exercises the real movement code.
+function autopilot(game, level, dt) {
+  const p = game.player;
+  const t = game.target;
+  const path = bfs(level, cellOf(level, p.x, p.y), cellOf(level, t.x, t.y));
+  if (!path) return { forward: 0, strafe: 0, turn: 0, mouseYaw: 0, mousePitch: 0 };
+  // Aim at the next waypoint at least half a cell away, or the target itself.
+  let aim = [t.x, t.y];
+  for (const [r, c] of path) {
+    const w = worldOf(level, r, c);
+    if (Math.hypot(w[0] - p.x, w[1] - p.y) > 1.0) { aim = w; break; }
+  }
+  const want = Math.atan2(aim[1] - p.y, aim[0] - p.x);
+  let d = want - p.yaw;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  const turn = Math.max(-1, Math.min(1, d / (PHYS.turnRate * dt * 4)));
+  return { forward: Math.abs(d) < 0.6 ? 1 : 0.25, strafe: 0, turn, mouseYaw: 0, mousePitch: 0 };
+}
+
+function insideWall(level, x, y) {
+  for (const b of level.boxes) {
+    const cx = Math.max(b.minX, Math.min(x, b.maxX));
+    const cy = Math.max(b.minY, Math.min(y, b.maxY));
+    if (Math.hypot(x - cx, y - cy) < PHYS.ballRadius - 1e-3) return b;
+  }
+  return null;
+}
+
+async function run() {
+  const index = await loadLevelIndex();
+  check('level index loads', index.length > 0, `${index.length} levels`);
+
+  for (const size of ['9x9', '15x15']) {
+    const entry = index.find((l) => l.size === size);
+    const level = await loadLevel(entry.file);
+    check(`${size}: geometry`, level.boxes.length > 10 && level.targets.length === entry.n_targets,
+      `${level.boxes.length} wall boxes, ${level.targets.length} targets`);
+    check(`${size}: spawns are free`, level.spawns.every(([x, y]) => !insideWall(level, x, y)),
+      `${level.spawns.length} spawn points`);
+
+    // Walk straight into whatever is ahead for 5 s: must never end up in a wall.
+    const g1 = new Game(level, { classicControls: true }, { seed: 4, timeScale: 1 });
+    let embedded = 0;
+    for (let i = 0; i < 300; i++) {
+      g1.update(1 / 60, { forward: 1, strafe: 0, turn: i < 60 ? 0.4 : 0, mouseYaw: 0, mousePitch: 0 });
+      if (insideWall(level, g1.player.x, g1.player.y)) embedded++;
+    }
+    check(`${size}: never inside a wall`, embedded === 0, `${embedded}/300 frames embedded`);
+
+    // Autopilot: with a shortest-path policy the score should climb steadily.
+    const dt = 1 / 30;
+    const game = new Game(level, { classicControls: true }, { seed: 7, timeScale: 1 });
+    const start = game.score;
+    let steps = 0;
+    while (!game.finished && steps < 60 * 30) { // cap at 60 s of simulated time
+      game.update(dt, autopilot(game, level, dt));
+      steps++;
+    }
+    const secs = (steps * dt).toFixed(0);
+    check(`${size}: autopilot collects targets`, game.score - start >= 3,
+      `${game.score} in ${secs}s of play`);
+    check(`${size}: speed is sane`, game.score / (steps * dt) < 2,
+      `${(game.score / (steps * dt) * 60).toFixed(1)} objects/min`);
+
+    // Timer ends the episode.
+    const g2 = new Game(level, { classicControls: true }, { seed: 1, timeScale: 0.01 });
+    let ended = null;
+    for (let i = 0; i < 2000 && !ended; i++) {
+      if (g2.update(1 / 10, { forward: 0, strafe: 0, turn: 0, mouseYaw: 0, mousePitch: 0 }) === 'end') ended = i;
+    }
+    check(`${size}: episode ends on time`, ended !== null && Math.abs(g2.elapsed - g2.duration) < 0.2,
+      `after ${g2.elapsed.toFixed(1)}s of ${g2.duration.toFixed(1)}s`);
+  }
+  log.push(failures ? `<span class="fail">${failures} FAILURES</span>` : '<span class="pass">ALL TESTS PASSED</span>');
+  out.innerHTML = log.join('\n');
+  document.title = failures ? 'FAIL' : 'OK';
+}
+
+run().catch((e) => { out.innerHTML += `\n<span class="fail">ERROR</span> ${e.stack || e}`; document.title = 'FAIL'; });
+</script>
+</body></html>

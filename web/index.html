@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0c1016">
+<title>Memory Maze</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="border" hidden></div>
+
+<div id="hud" hidden>
+  <div class="hud-item"><span class="hud-label">find</span><span id="hudSwatch" class="swatch"></span></div>
+  <div class="hud-item"><span class="hud-label">score</span><span id="hudScore" class="hud-value">0</span></div>
+  <div class="hud-item"><span class="hud-label">time</span><span id="hudTime" class="hud-value">0:00</span></div>
+</div>
+<canvas id="practiceMap" hidden></canvas>
+
+<div id="loading" class="overlay" hidden><div class="panel"><p>Loading maze…</p></div></div>
+
+<div id="menu" class="overlay">
+  <div class="panel wide">
+    <h1>Memory Maze</h1>
+    <p class="sub">Find the object whose colour frames the screen. Touch it, and a new colour is
+      asked for. The maze never changes — so remember where everything is.</p>
+
+    <div id="sizeGrid" class="grid"></div>
+
+    <div class="row">
+      <label>Maze
+        <select id="levelSelect"></select>
+      </label>
+      <label>Episode
+        <select id="timeSelect">
+          <option value="1">Full — benchmark length</option>
+          <option value="0.25">Short — quarter length</option>
+        </select>
+      </label>
+    </div>
+
+    <details class="opts">
+      <summary>Controls &amp; options</summary>
+      <div class="opt"><label><input type="checkbox" id="classicToggle"> Classic controls — forward + turn only, exactly like the RL environment</label></div>
+      <div class="opt"><label><input type="checkbox" id="retroToggle"> Agent view — render at 64×64, what the RL agent actually sees</label></div>
+      <div class="opt"><label><input type="checkbox" id="practiceToggle"> Practice — show the map while playing (unranked)</label></div>
+      <div class="opt"><label><input type="checkbox" id="invertToggle"> Invert mouse Y</label></div>
+      <div class="opt"><label>Mouse sensitivity <input type="range" id="sensRange" min="0.3" max="2.5" step="0.1"></label></div>
+      <p class="keys"><b>W A S D</b> move · <b>mouse</b> look · <b>← →</b> turn · <b>Esc</b> pause · on a phone: left half to move, right half to look</p>
+    </details>
+
+    <button id="startBtn" class="primary">Play</button>
+    <p id="menuError" class="error" hidden></p>
+  </div>
+</div>
+
+<div id="pause" class="overlay" hidden>
+  <div class="panel">
+    <h2>Paused</h2>
+    <button id="resumeBtn" class="primary">Resume</button>
+    <button id="quitBtn">Give up</button>
+  </div>
+</div>
+
+<div id="end" class="overlay" hidden>
+  <div class="panel wide">
+    <h2 id="endTitle">Time</h2>
+    <p class="score"><span id="endScore">0</span> <span class="score-label">objects found</span></p>
+    <p id="endNote" class="sub"></p>
+    <canvas id="endMap" class="map"></canvas>
+    <p class="sub small">Your route, and where the objects were.</p>
+    <div class="row">
+      <button id="againBtn" class="primary">Play again</button>
+      <button id="endMenuBtn">Change maze</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

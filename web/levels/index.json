@@ -1,0 +1,340 @@
+{
+ "levels": [
+  {
+   "file": "9x9_001.json",
+   "size": "9x9",
+   "seed": 1,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_002.json",
+   "size": "9x9",
+   "seed": 2,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_003.json",
+   "size": "9x9",
+   "seed": 3,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_004.json",
+   "size": "9x9",
+   "seed": 4,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_005.json",
+   "size": "9x9",
+   "seed": 5,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_006.json",
+   "size": "9x9",
+   "seed": 6,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_007.json",
+   "size": "9x9",
+   "seed": 7,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_008.json",
+   "size": "9x9",
+   "seed": 8,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_009.json",
+   "size": "9x9",
+   "seed": 9,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_010.json",
+   "size": "9x9",
+   "seed": 10,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_011.json",
+   "size": "9x9",
+   "seed": 11,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "9x9_012.json",
+   "size": "9x9",
+   "seed": 12,
+   "n_targets": 3,
+   "time_limit": 250
+  },
+  {
+   "file": "11x11_001.json",
+   "size": "11x11",
+   "seed": 1,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_002.json",
+   "size": "11x11",
+   "seed": 2,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_003.json",
+   "size": "11x11",
+   "seed": 3,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_004.json",
+   "size": "11x11",
+   "seed": 4,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_005.json",
+   "size": "11x11",
+   "seed": 5,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_006.json",
+   "size": "11x11",
+   "seed": 6,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_007.json",
+   "size": "11x11",
+   "seed": 7,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_008.json",
+   "size": "11x11",
+   "seed": 8,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_009.json",
+   "size": "11x11",
+   "seed": 9,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_010.json",
+   "size": "11x11",
+   "seed": 10,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_011.json",
+   "size": "11x11",
+   "seed": 11,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "11x11_012.json",
+   "size": "11x11",
+   "seed": 12,
+   "n_targets": 4,
+   "time_limit": 500
+  },
+  {
+   "file": "13x13_001.json",
+   "size": "13x13",
+   "seed": 1,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_002.json",
+   "size": "13x13",
+   "seed": 2,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_003.json",
+   "size": "13x13",
+   "seed": 3,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_004.json",
+   "size": "13x13",
+   "seed": 4,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_005.json",
+   "size": "13x13",
+   "seed": 5,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_006.json",
+   "size": "13x13",
+   "seed": 6,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_007.json",
+   "size": "13x13",
+   "seed": 7,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_008.json",
+   "size": "13x13",
+   "seed": 8,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_009.json",
+   "size": "13x13",
+   "seed": 9,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_010.json",
+   "size": "13x13",
+   "seed": 10,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_011.json",
+   "size": "13x13",
+   "seed": 11,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "13x13_012.json",
+   "size": "13x13",
+   "seed": 12,
+   "n_targets": 5,
+   "time_limit": 750
+  },
+  {
+   "file": "15x15_001.json",
+   "size": "15x15",
+   "seed": 1,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_002.json",
+   "size": "15x15",
+   "seed": 2,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_003.json",
+   "size": "15x15",
+   "seed": 3,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_004.json",
+   "size": "15x15",
+   "seed": 4,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_005.json",
+   "size": "15x15",
+   "seed": 5,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_006.json",
+   "size": "15x15",
+   "seed": 6,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_007.json",
+   "size": "15x15",
+   "seed": 7,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_008.json",
+   "size": "15x15",
+   "seed": 8,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_009.json",
+   "size": "15x15",
+   "seed": 9,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_010.json",
+   "size": "15x15",
+   "seed": 10,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_011.json",
+   "size": "15x15",
+   "seed": 11,
+   "n_targets": 6,
+   "time_limit": 1000
+  },
+  {
+   "file": "15x15_012.json",
+   "size": "15x15",
+   "seed": 12,
+   "n_targets": 6,
+   "time_limit": 1000
+  }
+ ]
+}
