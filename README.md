@@ -122,19 +122,24 @@ so hosting it means *serving that directory over HTTPS*. Two rules only:
 - every path in the app is relative, so it works fine in a subdirectory
   (`https://example.com/games/memory-maze/`). Don't rewrite paths.
 
-### GitHub Pages (what this repo is set up for)
+### GitHub Pages
 
-`.github/workflows/pages.yml` publishes `web/` on every push to `main`. Enable it
-once:
+This repo works with either Pages source, because Pages cannot serve a `web/`
+subdirectory directly:
 
-1. repo **Settings → Pages → Source: GitHub Actions**
-2. push to `main` (or run the workflow manually from the Actions tab)
+**Deploy from a branch** (Settings → Pages → Source: *Deploy from a branch*, `main`
+/ root) publishes the whole repository, so the game ends up at
+`https://<user>.github.io/<repo>/web/`. The `index.html` at the repo root is a
+redirect to `web/`, so the bare URL works too, and `.nojekyll` stops Jekyll from
+rendering the README in its place.
 
-The site lands at `https://<user>.github.io/<repo>/`. Pages can only serve a repo
-root or `/docs`, which is why this goes through the workflow rather than the
-"deploy from a branch" option — that way `web/` stays where it is. If you would
-rather not use Actions, the alternatives are to rename `web/` to `docs/` and select
-"deploy from a branch → /docs", or to push the subtree to a `gh-pages` branch:
+**GitHub Actions** (Settings → Pages → Source: *GitHub Actions*) runs
+`.github/workflows/pages.yml`, which publishes only `web/` — the game is then at
+the bare URL with no `/web/` in it and no redirect hop. Switch the source and push;
+the workflow does the rest.
+
+Either way, deploys take a minute or so after the push. A third option, if you want
+`web/` at the root of a branch instead:
 
 ```sh
 git subtree push --prefix web origin gh-pages

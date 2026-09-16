@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memory Maze</title>
+<!-- GitHub Pages in "deploy from a branch" mode serves this repository root,
+     where there is no game - the game is the web/ directory. Send visitors
+     there. (With Pages set to the GitHub Actions source, web/ is published as
+     the site root and this file is never served.) -->
+<meta http-equiv="refresh" content="0; url=web/">
+<link rel="canonical" href="web/">
+<style>
+  body { background: #0c1016; color: #e8edf4; font: 16px/1.6 ui-sans-serif, system-ui, sans-serif;
+         display: grid; place-items: center; height: 100vh; margin: 0; text-align: center; }
+  a { color: #5ac8fa; }
+</style>
+</head>
+<body>
+  <div>
+    <h1>Memory Maze</h1>
+    <p>Taking you to the game… <a href="web/">play now</a> if nothing happens.</p>
+  </div>
+  <script>location.replace('web/' + location.search + location.hash);</script>
+</body>
+</html>
