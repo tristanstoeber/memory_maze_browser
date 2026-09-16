@@ -5,6 +5,10 @@ a static web page, no server, no Python at runtime. Levels are generated once by
 the real dm_control/MuJoCo environment and exported to JSON; the browser rebuilds
 that exact geometry in three.js and reimplements the walker and the task rules.
 
+**Play it: https://tristanstoeber.github.io/memory_maze_browser/**
+
+Or locally:
+
 ```sh
 ./serve.sh            # http://localhost:8765/
 ```
@@ -107,14 +111,90 @@ google-chrome --headless=new --virtual-time-budget=60000 \
   --dump-dom http://localhost:8765/test.html | grep -E 'PASS|FAIL'
 ```
 
-## Packaging
+## Hosting
+
+Everything the game needs is in `web/`: HTML, CSS, ES modules, the three.js bundle,
+the level JSON and the textures. There is no build step, no bundler and no backend,
+so hosting it means *serving that directory over HTTPS*. Two rules only:
+
+- it must be served over `http://` or `https://`, not `file://` — ES modules and the
+  service worker are blocked on `file://`
+- every path in the app is relative, so it works fine in a subdirectory
+  (`https://example.com/games/memory-maze/`). Don't rewrite paths.
+
+### GitHub Pages (what this repo is set up for)
+
+`.github/workflows/pages.yml` publishes `web/` on every push to `main`. Enable it
+once:
+
+1. repo **Settings → Pages → Source: GitHub Actions**
+2. push to `main` (or run the workflow manually from the Actions tab)
+
+The site lands at `https://<user>.github.io/<repo>/`. Pages can only serve a repo
+root or `/docs`, which is why this goes through the workflow rather than the
+"deploy from a branch" option — that way `web/` stays where it is. If you would
+rather not use Actions, the alternatives are to rename `web/` to `docs/` and select
+"deploy from a branch → /docs", or to push the subtree to a `gh-pages` branch:
+
+```sh
+git subtree push --prefix web origin gh-pages
+```
+
+### Any other static host
+
+```sh
+# Netlify:   publish directory = web
+netlify deploy --prod --dir=web
+
+# Vercel:
+vercel deploy --prod web
+
+# Cloudflare Pages:  build command = (none), output directory = web
+npx wrangler pages deploy web
+
+# A plain server: copy the directory and serve it
+rsync -av web/ user@host:/var/www/memory-maze/
+```
+
+nginx needs nothing special, but these two headers make it behave:
+
+```nginx
+location / {
+    root /var/www/memory-maze;
+    try_files $uri $uri/ =404;
+}
+# Levels and textures only change when you re-export; the app shell should not
+# be cached hard, or players get stale code after a deploy.
+location ~* ^/(levels|assets|vendor)/ { expires 30d; add_header Cache-Control "public, immutable"; }
+location ~* \.(html|js|css)$        { add_header Cache-Control "no-cache"; }
+location = /sw.js                    { add_header Cache-Control "no-cache"; }
+```
+
+### On your own network
+
+`./serve.sh` binds to localhost only. To reach it from a phone on the same wifi:
+
+```sh
+cd web && python3 -m http.server 8765      # binds all interfaces
+```
+
+then browse to `http://<your-ip>:8765`. Note that "Add to Home Screen" and offline
+mode need HTTPS (or `localhost`) — over plain HTTP on a LAN address the game plays
+fine but the service worker will not install.
+
+### After a re-export
+
+Bump `CACHE` in `web/sw.js` when you regenerate levels, otherwise installed copies
+keep serving the old ones from their cache. Code and the level index are
+network-first, so ordinary edits reach players on the next load.
+
+## Packaging as a native app
 
 The PWA install is usually enough. For a store-style build, point a wrapper at
-`web/` — it needs no build step:
+`web/` — still no build step:
 
 - desktop: [Tauri](https://tauri.app) with `frontendDist: "../web"` (~5 MB binary)
 - mobile: [Capacitor](https://capacitorjs.com) with `webDir: "web"`
-- anywhere: copy `web/` to any static host
 
 ## Credits
 
