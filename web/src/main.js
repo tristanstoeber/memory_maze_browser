@@ -226,7 +226,7 @@ function bindUI() {
   $('retroToggle').addEventListener('change', (e) => { saveSetting('retro', e.target.checked); resize(); });
   $('invertToggle').addEventListener('change', (e) => saveSetting('invertY', e.target.checked));
   $('sensRange').addEventListener('input', (e) => saveSetting('mouseSensitivity', parseFloat(e.target.value)));
-  canvas.addEventListener('click', () => { if (state === 'play') input.requestLock(); });
+  window.addEventListener('click', () => { if (state === 'play') input.requestLock(); });
 }
 
 function applySettingsToUI() {
@@ -243,6 +243,8 @@ async function start() {
     updateAuthUI();
     return;
   }
+  input.requestLock(); // Request synchronously while user click gesture is active!
+
   const choice = $('levelSelect').value;
   const pool = levelIndex.filter((l) => l.size === selected.size);
   const entry = choice === 'random'
@@ -267,8 +269,8 @@ function pause() {
 
 function resume() {
   if (state !== 'paused') return;
-  setState('play');
   input.requestLock();
+  setState('play');
   lastTime = performance.now();
 }
 
