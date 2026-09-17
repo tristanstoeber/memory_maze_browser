@@ -28,6 +28,118 @@ let selected = { size: '9x9', seed: 1, timeScale: 1, practice: false };
 let lastTime = performance.now();
 let mapClock = 0;
 
+// ---------------------------------------------------------------- auth
+
+const GOOGLE_CLIENT_ID = '866673679689-pevk4clk9ogt1ap6nnen6b1uaqb0m81v.apps.googleusercontent.com';
+const APPS_SCRIPT_URL = localStorage.getItem('mmb_apps_script_url') || 'https://script.google.com/macros/s/AKfycbzxr6XSGg8OXWeEjstLUSDUVTrm19uVor7m-1KJOHiJf-JPl5oNtkEZ4slvhXf_5ZHx/exec';
+let signedInUser = null;
+
+function decodeJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error('Failed to decode JWT', e);
+    return null;
+  }
+}
+
+function updateAuthUI() {
+  const startBtn = $('startBtn');
+  const authNote = $('authNote');
+  const playerInfo = $('playerInfo');
+  const playerGreeting = $('playerGreeting');
+  const gBtn = $('g_id_signin');
+
+  if (signedInUser) {
+    if (gBtn) gBtn.hidden = true;
+    if (authNote) authNote.hidden = true;
+    if (playerInfo) playerInfo.hidden = false;
+    if (playerGreeting) playerGreeting.textContent = `Signed in as: ${signedInUser.name}`;
+    if (startBtn) startBtn.disabled = false;
+  } else {
+    if (gBtn) gBtn.hidden = false;
+    if (authNote) {
+      authNote.textContent = 'Sign in with Google to play.';
+      authNote.hidden = false;
+    }
+    if (playerInfo) playerInfo.hidden = true;
+    if (startBtn) startBtn.disabled = true;
+  }
+}
+
+function handleCredentialResponse(response) {
+  const payload = decodeJwt(response.credential);
+  if (!payload) return;
+  signedInUser = {
+    id: payload.sub,
+    name: payload.name || payload.email || 'Participant',
+    email: payload.email,
+  };
+  try {
+    sessionStorage.setItem('mm_user', JSON.stringify(signedInUser));
+  } catch (_) {}
+  updateAuthUI();
+}
+
+function signOut() {
+  signedInUser = null;
+  try {
+    sessionStorage.removeItem('mm_user');
+  } catch (_) {}
+  if (window.google?.accounts?.id) {
+    google.accounts.id.disableAutoSelect();
+  }
+  updateAuthUI();
+  setupGoogleBtn();
+}
+
+function setupGoogleBtn() {
+  if (!window.google?.accounts?.id) return;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse,
+  });
+  const container = $('g_id_signin');
+  if (container) {
+    container.innerHTML = '';
+    google.accounts.id.renderButton(container, {
+      theme: 'filled_blue',
+      size: 'large',
+      shape: 'rectangular',
+      text: 'signin_with',
+    });
+  }
+}
+
+function initAuth() {
+  try {
+    const saved = sessionStorage.getItem('mm_user');
+    if (saved) signedInUser = JSON.parse(saved);
+  } catch (_) {}
+
+  $('signOutBtn')?.addEventListener('click', signOut);
+  updateAuthUI();
+
+  if (window.google?.accounts?.id) {
+    setupGoogleBtn();
+  } else {
+    const timer = setInterval(() => {
+      if (window.google?.accounts?.id) {
+        clearInterval(timer);
+        setupGoogleBtn();
+      }
+    }, 100);
+  }
+}
+
 // ---------------------------------------------------------------- boot
 
 init().catch((err) => {
@@ -39,6 +151,7 @@ async function init() {
   levelIndex = await loadLevelIndex();
   buildSizeCards();
   bindUI();
+  initAuth();
   applySettingsToUI();
   resize();
   window.addEventListener('resize', resize);
@@ -118,6 +231,10 @@ function applySettingsToUI() {
 // ---------------------------------------------------------------- episode
 
 async function start() {
+  if (!signedInUser) {
+    updateAuthUI();
+    return;
+  }
   const choice = $('levelSelect').value;
   const pool = levelIndex.filter((l) => l.size === selected.size);
   const entry = choice === 'random'
@@ -147,7 +264,50 @@ function resume() {
   lastTime = performance.now();
 }
 
+async function sendGameRecord(reason) {
+  if (!game) return;
+  const record = {
+    timestamp: new Date().toISOString(),
+    user_id: signedInUser?.id || 'anonymous',
+    user_name: signedInUser?.name || 'anonymous',
+    user_email: signedInUser?.email || '',
+    size: selected.size,
+    seed: selected.seed,
+    time_scale: selected.timeScale,
+    time_limit: game.duration,
+    elapsed_seconds: Math.round(game.elapsed * 10) / 10,
+    score: game.score,
+    reason: reason,
+    classic_controls: settings.classicControls,
+    retro_view: settings.retro,
+    practice_mode: selected.practice,
+    invert_y: settings.invertY,
+    mouse_sensitivity: settings.mouseSensitivity,
+    path: game.path,
+  };
+
+  console.log('Game run record:', record);
+
+  const url = APPS_SCRIPT_URL || localStorage.getItem('mmb_apps_script_url');
+  if (url) {
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record),
+      });
+      console.log('Record sent to Google Apps Script');
+    } catch (err) {
+      console.error('Failed to send record to Apps Script:', err);
+    }
+  }
+}
+
 function toMenu() {
+  if (game && !game.finished && game.elapsed > 2) {
+    sendGameRecord('quit');
+  }
   setState('menu');
   input.releaseLock();
   level = null; game = null;
@@ -155,6 +315,7 @@ function toMenu() {
 }
 
 function finish() {
+  sendGameRecord('completed');
   setState('end');
   input.releaseLock();
   const scored = selected.timeScale === 1 && !selected.practice;
@@ -201,7 +362,7 @@ function updateHud(dt) {
   $('hudScore').textContent = game.score;
   $('hudTime').textContent = fmtTime(game.remaining);
   const border = $('border');
-  border.style.borderColor = `rgb(${t.color.r * 255 * 0.7 | 0},${t.color.g * 255 * 0.7 | 0},${t.color.b * 255 * 0.7 | 0})`;
+  border.style.borderColor = t.hex;
   $('hudSwatch').style.background = t.hex;
 
   if (selected.practice) {
@@ -236,6 +397,7 @@ function setState(next) {
 
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
+  const side = Math.min(w, h);
   if (settings.retro) {
     const n = RENDER.retroSize;
     renderer.setPixelRatio(1);
@@ -245,8 +407,8 @@ function resize() {
     document.body.classList.add('retro');
   } else {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
+    renderer.setSize(side, side, false);
+    camera.aspect = 1;
     canvas.classList.remove('retro');
     document.body.classList.remove('retro');
   }

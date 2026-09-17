@@ -81,20 +81,6 @@ export class Player {
           this.vx = this.vy = 0;
         }
       }
-      // Target spheres are obstacles in the Python env too - you bump into them.
-      for (const t of level.targets) {
-        const dx = this.x - t.x, dy = this.y - t.y;
-        const d = Math.hypot(dx, dy);
-        const min = t.radius + r;
-        if (d < min && d > 1e-9) {
-          hit = true;
-          const push = (min - d) / d;
-          this.x += dx * push; this.y += dy * push;
-          const nx = dx / d, ny = dy / d;
-          const vn = this.vx * nx + this.vy * ny;
-          if (vn < 0) { this.vx -= vn * nx; this.vy -= vn * ny; }
-        }
-      }
       if (!hit) break;
     }
   }

@@ -8,6 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <canvas id="view"></canvas>
@@ -51,6 +52,15 @@
       <div class="opt"><label>Mouse sensitivity <input type="range" id="sensRange" min="0.3" max="2.5" step="0.1"></label></div>
       <p class="keys"><b>W A S D</b> move · <b>mouse</b> look · <b>← →</b> turn · <b>Esc</b> pause · on a phone: left half to move, right half to look</p>
     </details>
+
+    <div id="authSection" class="auth-section">
+      <div id="g_id_signin"></div>
+      <div id="playerInfo" class="player-info" hidden>
+        <span id="playerGreeting"></span>
+        <button id="signOutBtn" class="subtle-btn" type="button">Sign out</button>
+      </div>
+      <p id="authNote" class="auth-note">Sign in with Google to play.</p>
+    </div>
 
     <button id="startBtn" class="primary">Play</button>
     <p id="menuError" class="error" hidden></p>
