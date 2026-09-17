@@ -75,13 +75,21 @@ function updateAuthUI() {
   }
 }
 
-function handleCredentialResponse(response) {
+async function hashId(rawId) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode('mm_salt_study_' + rawId);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return 'p_' + hashArray.map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+
+async function handleCredentialResponse(response) {
   const payload = decodeJwt(response.credential);
   if (!payload) return;
+  const pseudonym = await hashId(payload.sub);
   signedInUser = {
-    id: payload.sub,
-    name: payload.name || payload.email || 'Participant',
-    email: payload.email,
+    pseudonym: pseudonym,
+    name: payload.name || 'Participant',
   };
   try {
     sessionStorage.setItem('mm_user', JSON.stringify(signedInUser));
@@ -268,9 +276,9 @@ async function sendGameRecord(reason) {
   if (!game) return;
   const record = {
     timestamp: new Date().toISOString(),
-    user_id: signedInUser?.id || 'anonymous',
-    user_name: signedInUser?.name || 'anonymous',
-    user_email: signedInUser?.email || '',
+    user_id: signedInUser?.pseudonym || 'anonymous',
+    user_name: signedInUser?.pseudonym || 'anonymous',
+    user_email: '', // Never transmitted or stored (GDPR pseudonymization)
     size: selected.size,
     seed: selected.seed,
     time_scale: selected.timeScale,

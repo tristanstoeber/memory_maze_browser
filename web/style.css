@@ -170,6 +170,14 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
   color: var(--muted);
   margin: 0;
 }
+.privacy-note {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #7b8b9e;
+  text-align: center;
+  margin: 6px 0 0;
+  max-width: 440px;
+}
 .subtle-btn {
   padding: 4px 10px;
   font-size: 12px;
