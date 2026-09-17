@@ -2,7 +2,7 @@
  * Memory Maze Browser - Geschütztes Google Apps Script Backend
  * 
  * Deployment URL:
- * https://script.google.com/macros/s/AKfycbzxr6XSGg8OXWeEjstLUSDUVTrm19uVor7m-1KJOHiJf-JPl5oNtkEZ4slvhXf_5ZHx/exec
+ * https://script.google.com/macros/s/AKfycbzmdYR7Uqz4Kid4faxd63F54cXZAdLIAXOXGNX-EtjiX1NoE710C1-o94r5waXQzL9g/exec
  */
 
 var DRIVE_FOLDER_ID = "1RyAOeKrt8pj-5qrZ97n0GqBn4xYDoslz"; 

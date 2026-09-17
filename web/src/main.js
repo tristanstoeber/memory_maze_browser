@@ -31,7 +31,7 @@ let mapClock = 0;
 // ---------------------------------------------------------------- auth
 
 const GOOGLE_CLIENT_ID = '866673679689-pevk4clk9ogt1ap6nnen6b1uaqb0m81v.apps.googleusercontent.com';
-const APPS_SCRIPT_URL = localStorage.getItem('mmb_apps_script_url') || 'https://script.google.com/macros/s/AKfycbzxr6XSGg8OXWeEjstLUSDUVTrm19uVor7m-1KJOHiJf-JPl5oNtkEZ4slvhXf_5ZHx/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmdYR7Uqz4Kid4faxd63F54cXZAdLIAXOXGNX-EtjiX1NoE710C1-o94r5waXQzL9g/exec';
 let signedInUser = null;
 
 function decodeJwt(token) {
@@ -296,7 +296,7 @@ async function sendGameRecord(reason) {
 
   console.log('Game run record:', record);
 
-  const url = APPS_SCRIPT_URL || localStorage.getItem('mmb_apps_script_url');
+  const url = APPS_SCRIPT_URL;
   if (url) {
     try {
       await fetch(url, {
