@@ -278,16 +278,14 @@ async function sendGameRecord(reason) {
   if (!game) return;
   const record = {
     timestamp: new Date().toISOString(),
-    user_id: signedInUser?.pseudonym || 'anonymous',
-    user_name: signedInUser?.pseudonym || 'anonymous',
-    user_email: '', // Never transmitted or stored (GDPR pseudonymization)
-    size: selected.size,
-    seed: selected.seed,
+    participant_id: signedInUser?.pseudonym || 'anonymous',
+    maze_size: selected.size,
+    maze_seed: selected.seed,
     time_scale: selected.timeScale,
-    time_limit: game.duration,
+    time_limit_seconds: game.duration,
     elapsed_seconds: Math.round(game.elapsed * 10) / 10,
     score: game.score,
-    reason: reason,
+    finish_reason: reason,
     classic_controls: settings.classicControls,
     retro_view: settings.retro,
     practice_mode: selected.practice,

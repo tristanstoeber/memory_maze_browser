@@ -10,10 +10,22 @@ var VALID_SIZES = ["9x9", "11x11", "13x13", "15x15"];
 
 function setupSheetHeader(sheet) {
   var headers = [
-    "Timestamp", "User Name", "User Email", "User ID", "Maze Size",
-    "Maze Seed", "Time Scale", "Time Limit (s)", "Elapsed (s)", "Score",
-    "Reason", "Classic Controls", "Retro View", "Practice Mode",
-    "Invert Y", "Mouse Sensitivity", "Path Points", "Trajectory File URL"
+    "timestamp",
+    "participant_id",
+    "maze_size",
+    "maze_seed",
+    "time_scale",
+    "time_limit_seconds",
+    "elapsed_seconds",
+    "score",
+    "finish_reason",
+    "classic_controls",
+    "retro_view",
+    "practice_mode",
+    "invert_y",
+    "mouse_sensitivity",
+    "path_points",
+    "trajectory_url"
   ];
   sheet.appendRow(headers);
   sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
@@ -34,14 +46,20 @@ function doPost(e) {
 
     var data = JSON.parse(e.postData.contents);
 
-    // 2. Auth-Schutz: Muss eingeloggter Google-Nutzer sein
-    if (!data.user_id || data.user_id === "anonymous") {
+    // 2. Auth-Schutz: Muss pseudonymisierter Google-Nutzer sein
+    var participantId = data.participant_id || data.user_id;
+    if (!participantId || participantId === "anonymous") {
       return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Auth required" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
     // 3. Validierungs-Schutz: Nur echte Spiel-Daten akzeptieren
-    if (!VALID_SIZES.includes(data.size) || typeof data.score !== "number" || !Array.isArray(data.path)) {
+    var mazeSize = data.maze_size || data.size;
+    var mazeSeed = data.maze_seed !== undefined ? data.maze_seed : data.seed;
+    var timeLimit = data.time_limit_seconds !== undefined ? data.time_limit_seconds : data.time_limit;
+    var reason = data.finish_reason || data.reason || "";
+
+    if (!VALID_SIZES.includes(mazeSize) || typeof data.score !== "number" || !Array.isArray(data.path)) {
       return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Invalid game payload" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
@@ -55,8 +73,8 @@ function doPost(e) {
     if (DRIVE_FOLDER_ID && data.path.length > 0) {
       try {
         var folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-        var filename = (data.user_name || "player").replace(/[^a-zA-Z0-9_-]/g, "_") + 
-                       "_" + data.size + "_seed" + data.seed + "_" + Date.now() + ".json";
+        var filename = participantId.replace(/[^a-zA-Z0-9_-]/g, "_") + 
+                       "_" + mazeSize + "_seed" + (mazeSeed !== undefined ? mazeSeed : "0") + "_" + Date.now() + ".json";
         var file = folder.createFile(filename, JSON.stringify(data, null, 2), MimeType.PLAIN_TEXT);
         driveUrl = file.getUrl();
       } catch (driveErr) {
@@ -66,16 +84,14 @@ function doPost(e) {
 
     sheet.appendRow([
       data.timestamp || new Date().toISOString(),
-      data.user_name || "anonymous",
-      data.user_email || "",
-      data.user_id || "",
-      data.size || "",
-      data.seed !== undefined ? data.seed : "",
+      participantId,
+      mazeSize,
+      mazeSeed !== undefined ? mazeSeed : "",
       data.time_scale !== undefined ? data.time_scale : "",
-      data.time_limit !== undefined ? data.time_limit : "",
+      timeLimit !== undefined ? timeLimit : "",
       data.elapsed_seconds !== undefined ? data.elapsed_seconds : "",
       data.score !== undefined ? data.score : 0,
-      data.reason || "",
+      reason,
       data.classic_controls ? "TRUE" : "FALSE",
       data.retro_view ? "TRUE" : "FALSE",
       data.practice_mode ? "TRUE" : "FALSE",
